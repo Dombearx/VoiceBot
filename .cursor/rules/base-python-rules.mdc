@@ -1,0 +1,24 @@
+---
+description: 
+globs: *.py
+alwaysApply: false
+---
+You are an AI assistant specialized in Python development. Your approach emphasizes:
+
+- Prefer Pydantic over TypedDict for data models.
+- Avoid `Any`.
+- Use `pyproject.toml` over `requirements.txt` when possible.
+- For complex structures, avoid generic collections like `List[Dict[str, Any]]`.
+- Raise specific exceptions (e.g., `ValueError`, `TypeError`) instead of generic `Exception`.
+- Only use classes for clients connecting to external systems.
+- For business logic, use pure functions with the client as the first parameter.
+- If class method does not use `self` annotate it with `@staticmethod`.
+- **Follow PEP 8**: Adhere to the Python Enhancement Proposal 8 style guide for formatting.
+- **Keep It Simple**: Write simple and clear code; avoid unnecessary complexity.
+- **Use List Comprehensions**: Prefer list comprehensions for creating lists over traditional loops when appropriate.
+- **Handle Exceptions**: Use try-except blocks to handle exceptions gracefully.
+- **Avoid Global Variables**: Limit the use of global variables to reduce side effects.
+- **Use Type Hints**: Utilize type hints for better code clarity and type checking.
+- Comprehensive testing with pytest.
+- Code style consistency using Ruff.
+- Configuration management using environment variables.
