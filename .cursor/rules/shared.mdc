@@ -1,0 +1,81 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# AI Rules for VoiceBot
+
+### Główny problem
+API do generowania głosów i tekstu mówionego (text-to-speech) jest funkcjonalne, ale brakuje prostego interfejsu użytkownika do jego obsługi oraz integracji z botem Discord. Ręczne wysyłanie zapytań do API jest nieefektywne i niewygodne w codziennym użytkowaniu.
+
+### Najmniejszy zestaw funkcjonalności
+- Przeglądanie i zarządzanie istniejącymi głosami (lista, podgląd, usuwanie, tworzenie)
+- Tworzenie nowych głosów poprzez formularz (np. nadanie nazwy, wybór parametrów, opis głosu - głosy są generowane z prompta)
+- Generowanie mowy (text-to-speech) na podstawie wybranego głosu i tekstu - nagranie będzie odtwarzane przez bota na discordzie
+- Konfiguracja bota Discord (ustawienie głosu i tekstu, który ma być odczytany)
+- Zarządzanie botem Discordowym - podłączanie i odłączanie go od kanałów głosowych
+- Prosty interfejs webowy dostępny przez VPN (brak uwierzytelniania użytkowników)
+
+### Co NIE wchodzi w zakres MVP
+- Publiczne udostępnienie aplikacji (brak hostingu produkcyjnego)
+- Zaawansowany system użytkowników i uprawnień
+- Historia / archiwizacja wygenerowanej mowy
+- Zaawansowane opcje konfiguracji bota Discord (np. obsługa wielu serwerów, eventy)
+- Obsługa wielu języków / lokalizacji interfejsu
+
+### Kryteria sukcesu
+- Użytkownik może w pełni obsłużyć API (tworzenie głosów, generowanie mowy) bez potrzeby znajomości zapytań HTTP
+- Użytkownik może jednym kliknięciem ustawić tekst i głos do użycia przez bota Discord
+- Aplikacja działa stabilnie w środowisku VPN i spełnia potrzeby osobistego użytku
+
+## Tech Stack
+
+- TypeScript 5
+- React 19
+- Tailwind 4
+- Shadcn/ui
+- Python 3.13
+- FastAPI 
+
+## Project Structure
+
+When introducing changes to the project, always follow the directory structure below:
+
+frontend: 
+`./frontend`
+- `./src` - source code
+- `./src/layouts` - layouts
+- `./src/pages` - pages
+- `./src/pages/api` - API endpoints
+- `./src/middleware/index.ts` - middleware
+- `./src/types.ts` - Types used to communicate with backend (Entities, DTOs)
+- `./src/components` - Client-side components written in React
+- `./src/components/ui` - Client-side components from Shadcn/ui
+- `./src/lib` - Services and helpers 
+- `./src/assets` - static internal assets
+- `./public` - public assets
+
+backend:
+`./backend`
+- `./main.py` - entrypoint
+- `./app` - source code
+- `./app/api` - routes
+- `./app/models` - pydantic models used across backend
+- `./app/db` - database connections / sessions
+- `./app/services` - business logic
+
+When modifying the directory structure, always update this section.
+
+## Coding practices
+
+### Guidelines for clean code
+
+- Use feedback from linters to improve the code when making changes.
+- Prioritize error handling and edge cases.
+- Handle errors and edge cases at the beginning of functions.
+- Use early returns for error conditions to avoid deeply nested if statements.
+- Place the happy path last in the function for improved readability.
+- Avoid unnecessary else statements; use if-return pattern instead.
+- Use guard clauses to handle preconditions and invalid states early.
+- Implement proper error logging and user-friendly error messages.
+- Consider using custom error types or error factories for consistent error handling.
