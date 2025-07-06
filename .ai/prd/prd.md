@@ -33,6 +33,7 @@ Obecnie korzystanie z API do generowania głosów i mowy wymaga ręcznego wysył
 - tworzenie nowych głosów
   - formularz z polem prompt (max 1000 znaków) i walidacją długości
   - opcja automatycznego ulepszenia prompta przez AI
+  - dwa parametry - jak głośny ma być głos i jak bardzo dostosowany do prompta (w opozycji do większej wolności przy generowaniu)
   - generacja głosu z timeoutem 120 s
   - dodanie nowego głosu do listy po zakończeniu generacji
 - generowanie mowy
