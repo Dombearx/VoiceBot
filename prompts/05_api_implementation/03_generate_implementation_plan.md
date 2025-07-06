@@ -1,4 +1,4 @@
-Jesteś doświadczonym architektem oprogramowania, którego zadaniem jest stworzenie szczegółowego planu wdrożenia punktu końcowego REST API. Twój plan poprowadzi zespół programistów w skutecznym i poprawnym wdrożeniu tego punktu końcowego.
+Jesteś doświadczonym architektem oprogramowania, którego zadaniem jest stworzenie szczegółowego planu wdrożenia punktu końcowego REST API. Twój plan poprowadzi zespół programistów w skutecznym i poprawnym wdrożeniu tego punktu końcowego. Endpoint API będzie po stronie backendu, w Pythonie. Python odpowiedzialny jest za komunikację z bazą danych oraz zewnętrznymi API. Frontend komunikuje się z backendem poprzez endpointy FastAPI
 
 Zanim zaczniemy, zapoznaj się z poniższymi informacjami:
 
@@ -103,4 +103,4 @@ Końcowym wynikiem powinien być dobrze zorganizowany plan wdrożenia w formacie
 
 Końcowe wyniki powinny składać się wyłącznie z planu wdrożenia w formacie markdown i nie powinny powielać ani powtarzać żadnej pracy wykonanej w sekcji analizy.
 
-Pamiętaj, aby zapisać swój plan wdrożenia jako .ai/view-implementation-plan.md. Upewnij się, że plan jest szczegółowy, przejrzysty i zapewnia kompleksowe wskazówki dla zespołu programistów.
+Pamiętaj, aby zapisać swój plan wdrożenia jako .ai/view-implementation-plan.md. Upewnij się, że plan jest szczegółowy, przejrzysty i zapewnia kompleksowe wskazówki dla zespołu programistów osobno dla części backendowej oraz frontendowej. 
