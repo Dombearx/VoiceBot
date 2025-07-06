@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import Enum
+from typing import Any
 from pydantic import BaseModel, Field, ConfigDict
 
 
@@ -20,11 +21,30 @@ class ApiType(str, Enum):
 
 
 # Voice Management
+class VoiceSampleDTO(CamelModel):
+    id: str
+    text: str
+    audio_url: str
+
+
 class VoiceDTO(CamelModel):
     id: str
     name: str
     prompt: str
     created_at: datetime  # serialized as createdAt
+    samples: list[VoiceSampleDTO] = Field(default_factory=list)
+
+
+class VoiceDetailDTO(CamelModel):
+    id: str
+    name: str
+    prompt: str
+    created_at: datetime
+    samples: list[VoiceSampleDTO]
+
+
+class ListVoicesResponseDTO(CamelModel):
+    items: list[VoiceDetailDTO]
 
 
 class CreateVoiceCommand(CamelModel):
@@ -50,7 +70,7 @@ class TextToSpeechCommand(CamelModel):
 
 
 class TextToSpeechResponseDTO(CamelModel):
-    voices: list[any]  # placeholder for TTS response structure
+    voices: list[Any]  # placeholder for TTS response structure
 
 
 # Generation Metrics
