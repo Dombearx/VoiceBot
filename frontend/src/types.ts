@@ -5,11 +5,18 @@
 export type ApiType = 'voice_generation' | 'tts' | 'prompt_improvement';
 
 // Voice Management
+export interface VoiceSampleDTO {
+  id: string;
+  text: string;
+  audioUrl: string;
+}
+
 export interface VoiceDTO {
   id: string;
   name: string;
   prompt: string;
   createdAt: string; // ISO8601 UTC
+  samples: VoiceSampleDTO[];
 }
 
 export interface ListVoicesResponseDTO {
