@@ -1,9 +1,9 @@
 ---
-description: Links to the documentation of elevenlabs lib
-globs:
 alwaysApply: false
 ---
 Here are links to elevenlabs documentation, you should read the webpage related to functionality you are implementing or designing
+Always use elevenlabs library to communicate with their API. The documentation can be found below:
+
 Designing a voice: https://elevenlabs.io/docs/api-reference/text-to-voice/design
 Create a voice (after design): https://elevenlabs.io/docs/api-reference/text-to-voice/create
 
