@@ -22,3 +22,4 @@ You are an AI assistant specialized in Python development. Your approach emphasi
 - Comprehensive testing with pytest.
 - Code style consistency using Ruff.
 - Configuration management using environment variables.
+- NEVER use relative imports. All imports should be in relation to python project directory.

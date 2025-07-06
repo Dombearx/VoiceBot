@@ -1,0 +1,14 @@
+---
+description: Links to the documentation of elevenlabs lib
+globs:
+alwaysApply: false
+---
+Here are links to elevenlabs documentation, you should read the webpage related to functionality you are implementing or designing
+Designing a voice: https://elevenlabs.io/docs/api-reference/text-to-voice/design
+Create a voice (after design): https://elevenlabs.io/docs/api-reference/text-to-voice/create
+
+Create speech: https://elevenlabs.io/docs/api-reference/text-to-speech/convert
+
+list voices: https://elevenlabs.io/docs/api-reference/voices/search
+get voice: https://elevenlabs.io/docs/api-reference/voices/get
+delete voice: https://elevenlabs.io/docs/api-reference/voices/delete
