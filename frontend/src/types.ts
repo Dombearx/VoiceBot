@@ -23,10 +23,29 @@ export interface ListVoicesResponseDTO {
   items: VoiceDTO[];
 }
 
-export interface CreateVoiceCommand {
+export interface DesignVoiceCommand {
   prompt: string;
-  loudness: number;
-  creativity: number;
+  sampleText?: string;
+  loudness?: number;
+  creativity?: number;
+}
+
+export interface VoicePreviewDTO {
+  generatedVoiceId: string;
+  audioBase64: string;
+  mediaType: string;
+  durationSecs: number;
+}
+
+export interface DesignVoiceResponseDTO {
+  previews: VoicePreviewDTO[];
+  text: string;
+}
+
+export interface CreateVoiceCommand {
+  voiceName: string;
+  voiceDescription: string;
+  generatedVoiceId: string;
 }
 
 export type CreateVoiceResponseDTO = VoiceDTO;

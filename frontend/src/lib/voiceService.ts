@@ -2,7 +2,14 @@
  * Voice Service - HTTP client for voice management operations
  */
 
-import type { ListVoicesResponseDTO, VoiceDTO } from '../types';
+import type { 
+  ListVoicesResponseDTO, 
+  VoiceDTO, 
+  DesignVoiceCommand, 
+  DesignVoiceResponseDTO, 
+  CreateVoiceCommand, 
+  CreateVoiceResponseDTO 
+} from '../types';
 
 // Configuration
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
@@ -128,5 +135,137 @@ export async function checkApiHealth(): Promise<boolean> {
     return response.ok;
   } catch {
     return false;
+  }
+}
+
+/**
+ * Design a voice and get previews for selection
+ * 
+ * @param command - DesignVoiceCommand with voice parameters
+ * @returns Promise<DesignVoiceResponseDTO> - Voice previews with audio samples
+ * @throws VoiceServiceError - If the API request fails
+ */
+export async function designVoice(command: DesignVoiceCommand): Promise<DesignVoiceResponseDTO> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/voices/design`, {
+      method: 'POST',
+      headers: defaultHeaders,
+      body: JSON.stringify(command),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.detail || errorMessage;
+      } catch {
+        errorMessage = errorText || errorMessage;
+      }
+
+      throw new VoiceServiceError(
+        `Failed to design voice: ${errorMessage}`,
+        response.status
+      );
+    }
+
+    const data = await response.json();
+    
+    // Validate response structure
+    if (!data || typeof data !== 'object' || !Array.isArray(data.previews)) {
+      throw new VoiceServiceError(
+        'Invalid response format: expected object with previews array'
+      );
+    }
+
+    return data as DesignVoiceResponseDTO;
+
+  } catch (error) {
+    if (error instanceof VoiceServiceError) {
+      throw error;
+    }
+
+    // Handle network errors
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new VoiceServiceError(
+        'Network error: Unable to connect to the API server',
+        0,
+        error
+      );
+    }
+
+    // Handle other errors
+    throw new VoiceServiceError(
+      `Unexpected error while designing voice: ${error instanceof Error ? error.message : String(error)}`,
+      0,
+      error instanceof Error ? error : undefined
+    );
+  }
+}
+
+/**
+ * Create a voice from a selected preview
+ * 
+ * @param command - CreateVoiceCommand with voice name, description, and generated voice ID
+ * @returns Promise<CreateVoiceResponseDTO> - Created voice data
+ * @throws VoiceServiceError - If the API request fails
+ */
+export async function createVoice(command: CreateVoiceCommand): Promise<CreateVoiceResponseDTO> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/voices/`, {
+      method: 'POST',
+      headers: defaultHeaders,
+      body: JSON.stringify(command),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.detail || errorMessage;
+      } catch {
+        errorMessage = errorText || errorMessage;
+      }
+
+      throw new VoiceServiceError(
+        `Failed to create voice: ${errorMessage}`,
+        response.status
+      );
+    }
+
+    const data = await response.json();
+    
+    // Validate response structure
+    if (!data || typeof data !== 'object' || !data.id) {
+      throw new VoiceServiceError(
+        'Invalid response format: expected voice object with id'
+      );
+    }
+
+    return data as CreateVoiceResponseDTO;
+
+  } catch (error) {
+    if (error instanceof VoiceServiceError) {
+      throw error;
+    }
+
+    // Handle network errors
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new VoiceServiceError(
+        'Network error: Unable to connect to the API server',
+        0,
+        error
+      );
+    }
+
+    // Handle other errors
+    throw new VoiceServiceError(
+      `Unexpected error while creating voice: ${error instanceof Error ? error.message : String(error)}`,
+      0,
+      error instanceof Error ? error : undefined
+    );
   }
 } 

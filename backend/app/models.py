@@ -47,10 +47,29 @@ class ListVoicesResponseDTO(CamelModel):
     items: list[VoiceDetailDTO]
 
 
+class DesignVoiceCommand(CamelModel):
+    prompt: str = Field(..., min_length=20, max_length=1000, description="Voice description (20-1000 characters)")
+    sample_text: str = Field(None, min_length=100, max_length=1000, description="Sample text for voice generation (100-1000 characters), optional - will auto-generate if not provided")
+    loudness: float = Field(0.5, ge=-1.0, le=1.0, description="Volume level (-1 to 1, 0 is roughly -24 LUFS)")
+    creativity: float = Field(5.0, ge=0.0, le=100.0, description="Guidance scale (0-100, lower = more creative)")
+
+
+class VoicePreviewDTO(CamelModel):
+    generated_voice_id: str
+    audio_base64: str
+    media_type: str
+    duration_secs: float
+
+
+class DesignVoiceResponseDTO(CamelModel):
+    previews: list[VoicePreviewDTO]
+    text: str
+
+
 class CreateVoiceCommand(CamelModel):
-    prompt: str
-    loudness: float
-    creativity: float
+    voice_name: str = Field(..., min_length=1, max_length=100, description="Name for the new voice")
+    voice_description: str = Field(..., min_length=20, max_length=1000, description="Description for the new voice (20-1000 characters)")
+    generated_voice_id: str = Field(..., description="ID of the selected voice preview from design endpoint")
 
 
 # Prompt Improvement

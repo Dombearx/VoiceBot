@@ -135,4 +135,99 @@ class ElevenLabsAPIClient:
             
         except AttributeError:
             # Log the error but don't fail the entire voice mapping
-            return None 
+            return None
+    
+    def design_voice(self, voice_description: str, loudness: float = 0.5, creativity: float = 5.0, sample_text: str = None) -> Dict[str, Any]:
+        """
+        Design a voice using ElevenLabs API.
+        
+        Args:
+            voice_description: Description of the voice to create (20-1000 chars)
+            loudness: Volume level (-1 to 1, default 0.5)
+            creativity: Guidance scale (0-100, default 5.0)
+            sample_text: Optional text to generate (100-1000 chars)
+            
+        Returns:
+            Dict containing previews with generated_voice_id and audio samples
+            
+        Raises:
+            Exception: If the API request fails
+        """
+        try:
+            # Prepare request data
+            request_data = {
+                "voice_description": voice_description,
+                # "model_id": "eleven_ttv_v3",
+                "loudness": loudness,
+                "guidance_scale": creativity,
+                "auto_generate_text": sample_text is None
+            }
+            
+            # Add sample text if provided
+            if sample_text:
+                request_data["text"] = sample_text
+            
+            # Call ElevenLabs design API
+            response = self.client.text_to_voice.design(**request_data)
+            
+            return {
+                "previews": response.previews,
+                "text": response.text
+            }
+            
+        except Exception as e:
+            # Map ElevenLabs API errors to more specific exceptions
+            error_message = str(e).lower()
+            if "unauthorized" in error_message or "401" in error_message:
+                raise ValueError("Invalid ElevenLabs API key") from e
+            elif "forbidden" in error_message or "403" in error_message:
+                raise ValueError("ElevenLabs API access forbidden - check API key permissions") from e
+            elif "rate limit" in error_message or "429" in error_message:
+                raise ValueError("ElevenLabs API rate limit exceeded - please try again later") from e
+            elif "unprocessable entity" in error_message or "422" in error_message:
+                raise ValueError("Invalid voice description or parameters") from e
+            else:
+                raise Exception(f"Failed to design voice: {str(e)}") from e
+    
+    def create_voice_from_preview(self, voice_name: str, voice_description: str, generated_voice_id: str) -> Dict[str, Any]:
+        """
+        Create a voice from a generated preview.
+        
+        Args:
+            voice_name: Name for the new voice
+            voice_description: Description for the new voice (20-1000 chars)
+            generated_voice_id: ID from design voice preview
+            
+        Returns:
+            Dict containing created voice data
+            
+        Raises:
+            Exception: If the API request fails
+        """
+        try:
+            response = self.client.text_to_voice.create(
+                voice_name=voice_name,
+                voice_description=voice_description,
+                generated_voice_id=generated_voice_id
+            )
+            
+            return {
+                "voice_id": response.voice_id,
+                "name": response.name,
+                "description": response.description,
+                "created_at_unix": response.created_at_unix
+            }
+            
+        except Exception as e:
+            # Map ElevenLabs API errors to more specific exceptions
+            error_message = str(e).lower()
+            if "unauthorized" in error_message or "401" in error_message:
+                raise ValueError("Invalid ElevenLabs API key") from e
+            elif "forbidden" in error_message or "403" in error_message:
+                raise ValueError("ElevenLabs API access forbidden - check API key permissions") from e
+            elif "rate limit" in error_message or "429" in error_message:
+                raise ValueError("ElevenLabs API rate limit exceeded - please try again later") from e
+            elif "unprocessable entity" in error_message or "422" in error_message:
+                raise ValueError("Invalid voice data or generated_voice_id") from e
+            else:
+                raise Exception(f"Failed to create voice: {str(e)}") from e
