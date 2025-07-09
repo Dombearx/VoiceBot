@@ -74,7 +74,7 @@ class CreateVoiceCommand(CamelModel):
 
 # Prompt Improvement
 class PromptImprovementCommand(CamelModel):
-    prompt: str
+    prompt: str = Field(..., min_length=1, max_length=1000, description="Prompt to improve (1-1000 characters)")
 
 
 class PromptImprovementResponseDTO(CamelModel):

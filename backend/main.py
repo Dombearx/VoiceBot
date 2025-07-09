@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.voices import router as voices_router
+from app.api.prompt_router import router as prompt_router
 
 # Load environment variables from .env file
 load_dotenv()
@@ -31,6 +32,7 @@ app.add_middleware(
 
 # Register routers
 app.include_router(voices_router)
+app.include_router(prompt_router)
 
 # Health check endpoint
 @app.get("/health")
