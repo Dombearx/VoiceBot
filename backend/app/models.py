@@ -141,12 +141,12 @@ class ConnectBotCommand(CamelModel):
 
 
 class BotConfigCommand(CamelModel):
-    name: str
+    nickname: str
     avatar: bytes  # uploaded file content; handled in endpoint
 
 
 class BotConfigResponseDTO(CamelModel):
-    name: str
+    nickname: str
     avatar_url: str
 
 
