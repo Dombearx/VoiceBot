@@ -142,12 +142,12 @@ export interface ConnectBotCommand {
 }
 
 export interface BotConfigCommand {
-  name: string;
+  nickname: string;
   avatar: File; // multipart/form-data file
 }
 
 export interface BotConfigResponseDTO {
-  name: string;
+  nickname: string;
   avatarUrl: string;
 }
 

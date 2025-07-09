@@ -8,7 +8,8 @@ You are an AI assistant specialized in Python development. Your approach emphasi
 - Prefer Pydantic over TypedDict for data models.
 - Avoid `Any`.
 - Use `pyproject.toml` over `requirements.txt` when possible.
-- For complex structures, avoid generic collections like `List[Dict[str, Any]]`.
+- For complex structures, avoid generic collections like `list[dict[str, Any]]`.
+- Do not use `Typing` lib for generic types, use standard python list, dict, etc.
 - Raise specific exceptions (e.g., `ValueError`, `TypeError`) instead of generic `Exception`.
 - Only use classes for clients connecting to external systems.
 - For business logic, use pure functions with the client as the first parameter.
