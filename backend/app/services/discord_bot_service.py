@@ -8,7 +8,9 @@ from typing import Optional
 import discord
 from discord.ext import commands
 
-from app.models import DiscordBotStatusDTO, VoiceChannelDTO, BotConfigResponseDTO
+from app.models import DiscordBotStatusDTO, VoiceChannelDTO, BotConfigResponseDTO, PlayCommand, TextToSpeechCommand
+from app.services.voice_service import synthesize_speech
+import io
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -328,6 +330,82 @@ class DiscordBotManager:
             logger.error(f"Error updating bot configuration: {str(e)}")
             raise Exception(f"Failed to update bot configuration: {str(e)}") from e
 
+    async def play_audio(self, command: PlayCommand) -> None:
+        """
+        Play audio in the currently connected voice channel.
+        
+        Args:
+            command: PlayCommand with voice_id and text
+            
+        Raises:
+            Exception: If bot is not connected, TTS generation fails, or playback fails
+        """
+        try:
+            if not self._client:
+                raise Exception("Discord bot not initialized")
+            
+            if not self._client.is_ready():
+                raise Exception("Discord bot not ready")
+            
+            # Check if bot is connected to a voice channel
+            if not self._client.voice_clients:
+                raise Exception("Bot is not connected to a voice channel")
+            
+            voice_client = self._client.voice_clients[0]
+            if not voice_client.is_connected():
+                raise Exception("Bot is not connected to a voice channel")
+            
+            # Generate TTS audio
+            logger.info(f"Generating TTS for voice_id={command.voice_id}, text_length={len(command.text)}")
+            
+            tts_command = TextToSpeechCommand(
+                voice_id=command.voice_id,
+                text=command.text,
+                timeout=30
+            )
+            
+            audio_data = await synthesize_speech(tts_command)
+            
+            # Save audio to temporary file and create audio source
+            import tempfile
+            import os
+            
+            # Create temporary file for audio
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.mp3') as temp_file:
+                temp_file.write(audio_data)
+                temp_file_path = temp_file.name
+            
+            try:
+                # Create audio source from file
+                audio_source = discord.FFmpegPCMAudio(temp_file_path)
+            except Exception as audio_error:
+                # Clean up temp file if audio source creation fails
+                os.unlink(temp_file_path)
+                raise Exception(f"Failed to create audio source: {str(audio_error)}") from audio_error
+            
+            # Stop current audio if playing
+            if voice_client.is_playing():
+                voice_client.stop()
+            
+            # Define cleanup function for after playback
+            def cleanup_temp_file(error):
+                try:
+                    os.unlink(temp_file_path)
+                    logger.debug(f"Cleaned up temporary audio file: {temp_file_path}")
+                except Exception as cleanup_error:
+                    logger.warning(f"Failed to clean up temporary file {temp_file_path}: {str(cleanup_error)}")
+                if error:
+                    logger.error(f"Audio playback error: {str(error)}")
+            
+            # Play the audio with cleanup callback
+            voice_client.play(audio_source, after=cleanup_temp_file)
+            
+            logger.info(f"Started playing audio in voice channel: {voice_client.channel.name}")
+            
+        except Exception as e:
+            logger.error(f"Error playing audio: {str(e)}")
+            raise Exception(f"Failed to play audio: {str(e)}") from e
+
 
 # Global instance of the Discord bot manager
 discord_bot_manager = DiscordBotManager()
@@ -354,4 +432,18 @@ async def get_status() -> DiscordBotStatusDTO:
         Exception: If there's an error checking bot status
     """
     manager = get_discord_bot_manager()
-    return await manager.get_status() 
+    return await manager.get_status()
+
+
+async def play_audio(command: PlayCommand) -> None:
+    """
+    Play audio in the currently connected voice channel.
+    
+    Args:
+        command: PlayCommand with voice_id and text
+        
+    Raises:
+        Exception: If bot is not connected, TTS generation fails, or playback fails
+    """
+    manager = get_discord_bot_manager()
+    await manager.play_audio(command) 

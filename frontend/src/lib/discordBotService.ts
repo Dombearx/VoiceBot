@@ -7,7 +7,8 @@ import type {
   VoiceChannelDTO, 
   ConnectBotCommand, 
   BotConfigCommand, 
-  BotConfigResponseDTO 
+  BotConfigResponseDTO,
+  PlayCommand 
 } from '../types';
 
 const API_BASE_URL = '/api'; // Proxy to backend
@@ -369,5 +370,62 @@ export async function checkDiscordBotApiHealth(): Promise<boolean> {
     return true;
   } catch {
     return false;
+  }
+}
+
+/**
+ * Play audio in the currently connected voice channel
+ * 
+ * @param command - PlayCommand with voice ID and text
+ * @returns Promise<void> Request accepted for processing
+ * @throws DiscordBotServiceError if the API request fails
+ */
+export async function playAudio(command: PlayCommand): Promise<void> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/discord-bot/play`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(command),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.detail || errorMessage;
+      } catch {
+        errorMessage = errorText || errorMessage;
+      }
+
+      throw new DiscordBotServiceError(
+        `Failed to play audio: ${errorMessage}`,
+        response.status
+      );
+    }
+
+    // 202 Accepted - no response body expected
+  } catch (error) {
+    if (error instanceof DiscordBotServiceError) {
+      throw error;
+    }
+
+    // Handle network errors
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new DiscordBotServiceError(
+        'Network error: Unable to connect to the API server',
+        0,
+        error
+      );
+    }
+
+    throw new DiscordBotServiceError(
+      `Audio playback request failed: ${error instanceof Error ? error.message : String(error)}`,
+      0,
+      error instanceof Error ? error : undefined
+    );
   }
 } 

@@ -9,7 +9,8 @@ from app.models import (
     DiscordBotStatusDTO, 
     VoiceChannelDTO, 
     ConnectBotCommand, 
-    BotConfigResponseDTO
+    BotConfigResponseDTO,
+    PlayCommand
 )
 from app.services import discord_bot_service
 
@@ -254,4 +255,66 @@ async def update_bot_config(
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Failed to update bot configuration: {error_msg}"
+            )
+
+
+@router.post("/play", status_code=status.HTTP_202_ACCEPTED)
+async def play(command: PlayCommand):
+    """
+    Play audio in the currently connected voice channel.
+    
+    Args:
+        command: PlayCommand with voice_id and text
+        
+    Returns:
+        202 Accepted: Request accepted for processing
+        
+    Raises:
+        HTTPException:
+            - 400 Bad Request: Invalid input data
+            - 404 Not Found: Voice not found
+            - 409 Conflict: Bot not connected to voice channel
+            - 500 Internal Server Error: TTS generation or playback failed
+    """
+    try:
+        await discord_bot_service.play_audio(command)
+        logger.info(f"Audio playback started for voice_id={command.voice_id}")
+        
+    except ValueError as e:
+        # Handle validation errors and voice not found
+        error_message = str(e)
+        if "voice" in error_message.lower() and "not found" in error_message.lower():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=error_message
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=error_message
+            )
+    except Exception as e:
+        error_message = str(e)
+        logger.error(f"Failed to play audio: {error_message}")
+        
+        # Map specific errors to appropriate HTTP status codes
+        if "not connected" in error_message.lower():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Bot is not connected to a voice channel"
+            )
+        elif "not initialized" in error_message.lower() or "not ready" in error_message.lower():
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Discord bot is not ready"
+            )
+        elif "rate limit" in error_message.lower():
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="API rate limit exceeded"
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to play audio: {error_message}"
             ) 

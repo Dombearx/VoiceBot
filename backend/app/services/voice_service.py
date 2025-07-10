@@ -6,8 +6,11 @@ import asyncio
 from datetime import datetime
 from typing import List
 
-from app.models import VoiceDetailDTO, CreateVoiceCommand, VoiceDTO, VoiceSampleDTO, DesignVoiceCommand, DesignVoiceResponseDTO, VoicePreviewDTO
+from app.models import VoiceDetailDTO, CreateVoiceCommand, VoiceDTO, VoiceSampleDTO, DesignVoiceCommand, DesignVoiceResponseDTO, VoicePreviewDTO, TextToSpeechCommand
 from app.services.elevenlabs_client import ElevenLabsAPIClient
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def list_voices(client: ElevenLabsAPIClient) -> List[VoiceDetailDTO]:
@@ -191,4 +194,92 @@ def _map_previews_to_samples(previews: List, text: str) -> List[VoiceSampleDTO]:
         )
         samples.append(sample)
     
-    return samples 
+    return samples
+
+
+async def synthesize_speech(command: TextToSpeechCommand) -> bytes:
+    """
+    Generate speech audio from text using ElevenLabs API.
+    
+    Args:
+        command: TextToSpeechCommand with voice_id, text, and timeout
+        
+    Returns:
+        bytes: Generated audio data in MP3 format
+        
+    Raises:
+        ValueError: If input validation fails or voice not found
+        Exception: If TTS generation fails
+    """
+    try:
+        # Validate input
+        if not command.voice_id or not command.voice_id.strip():
+            raise ValueError("Voice ID cannot be empty")
+        
+        if not command.text or not command.text.strip():
+            raise ValueError("Text cannot be empty")
+        
+        # Limit text length to prevent abuse
+        if len(command.text) > 5000:
+            raise ValueError("Text length cannot exceed 5000 characters")
+        
+        # Create ElevenLabs client
+        client = create_elevenlabs_client()
+        
+        # Generate speech
+        logger.info(f"Generating speech for voice_id={command.voice_id}, text_length={len(command.text)}")
+        
+        audio_data = client.generate_speech(
+            voice_id=command.voice_id,
+            text=command.text,
+            timeout=command.timeout
+        )
+        
+        # Check if audio_data is valid before logging length
+        if isinstance(audio_data, bytes):
+            logger.info(f"Speech generated successfully, audio_size={len(audio_data)} bytes")
+        else:
+            logger.info(f"Speech generated successfully, audio_type={type(audio_data)}")
+        
+        return audio_data
+        
+    except ValueError:
+        # Re-raise validation errors
+        raise
+    except Exception as e:
+        error_message = str(e)
+        logger.error(f"TTS generation failed: {error_message}")
+        
+        # Map specific errors to appropriate exceptions
+        if "voice" in error_message.lower() and ("not found" in error_message.lower() or "404" in error_message):
+            raise ValueError(f"Voice with ID {command.voice_id} not found")
+        elif "unauthorized" in error_message.lower() or "401" in error_message:
+            raise Exception("Invalid ElevenLabs API key")
+        elif "rate limit" in error_message.lower() or "429" in error_message:
+            raise Exception("ElevenLabs API rate limit exceeded")
+        else:
+            raise Exception(f"TTS generation failed: {error_message}")
+
+
+def validate_voice_exists(voice_id: str) -> bool:
+    """
+    Check if a voice ID exists in ElevenLabs.
+    
+    Args:
+        voice_id: Voice ID to validate
+        
+    Returns:
+        bool: True if voice exists, False otherwise
+        
+    Raises:
+        Exception: If API call fails
+    """
+    try:
+        client = create_elevenlabs_client()
+        voices = client.list_voices()
+        
+        return any(voice.id == voice_id for voice in voices)
+        
+    except Exception as e:
+        logger.error(f"Failed to validate voice existence: {str(e)}")
+        raise

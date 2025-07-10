@@ -8,6 +8,9 @@ from typing import Any, Dict, List
 from elevenlabs import ElevenLabs
 from app.models import VoiceDetailDTO, VoiceSampleDTO
 
+# ElevenLabs API configuration
+DEFAULT_TTS_MODEL = "eleven_multilingual_v2"
+
 
 class ElevenLabsAPIClient:
     """Client for interacting with ElevenLabs API."""
@@ -231,3 +234,51 @@ class ElevenLabsAPIClient:
                 raise ValueError("Invalid voice data or generated_voice_id") from e
             else:
                 raise Exception(f"Failed to create voice: {str(e)}") from e
+    
+    def generate_speech(self, voice_id: str, text: str, timeout: int = 30) -> bytes:
+        """
+        Generate speech audio from text using ElevenLabs API.
+        
+        Args:
+            voice_id: ID of the voice to use
+            text: Text to convert to speech
+            timeout: Request timeout in seconds
+            
+        Returns:
+            bytes: Generated audio data in MP3 format
+            
+        Raises:
+            Exception: If the API request fails
+        """
+        try:
+            # Generate speech using ElevenLabs client
+            response = self.client.text_to_speech.convert(
+                voice_id=voice_id,
+                text=text,
+                model_id=DEFAULT_TTS_MODEL,
+                output_format="mp3_44100_128"
+            )
+            
+            # Convert generator to bytes
+            audio_data = b""
+            for chunk in response:
+                if isinstance(chunk, bytes):
+                    audio_data += chunk
+            
+            return audio_data
+            
+        except Exception as e:
+            # Map ElevenLabs API errors to more specific exceptions
+            error_message = str(e).lower()
+            if "unauthorized" in error_message or "401" in error_message:
+                raise Exception("Invalid ElevenLabs API key") from e
+            elif "forbidden" in error_message or "403" in error_message:
+                raise Exception("ElevenLabs API access forbidden - check API key permissions") from e
+            elif "rate limit" in error_message or "429" in error_message:
+                raise Exception("ElevenLabs API rate limit exceeded - please try again later") from e
+            elif "not found" in error_message or "404" in error_message:
+                raise Exception(f"Voice with ID {voice_id} not found") from e
+            elif "unprocessable entity" in error_message or "422" in error_message:
+                raise Exception("Invalid text or voice parameters") from e
+            else:
+                raise Exception(f"Failed to generate speech: {str(e)}") from e
