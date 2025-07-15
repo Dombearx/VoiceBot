@@ -5,7 +5,7 @@ Voices API Router - Endpoints for voice management operations.
 from fastapi import APIRouter, HTTPException, status
 from typing import List
 from app.models import ListVoicesResponseDTO, VoiceDetailDTO, CreateVoiceCommand, VoiceDTO, DesignVoiceCommand, DesignVoiceResponseDTO
-from app.services.voice_service import list_voices, create_elevenlabs_client, create_voice, design_voice
+from app.services.voice_service import list_voices, create_elevenlabs_client, create_voice, design_voice, delete_voice
 
 router = APIRouter(prefix="/voices", tags=["voices"])
 
@@ -200,6 +200,62 @@ async def create_voice_endpoint(command: CreateVoiceCommand) -> VoiceDTO:
         else:
             status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
             detail = f"Failed to create voice: {error_message}"
+        
+        raise HTTPException(
+            status_code=status_code,
+            detail=detail
+        ) 
+
+
+@router.delete("/{voice_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_voice_endpoint(voice_id: str):
+    """
+    Delete a voice by ID.
+    
+    Args:
+        voice_id: ID of the voice to delete
+        
+    Returns:
+        204 No Content on successful deletion
+        
+    Raises:
+        HTTPException:
+            - 404 Not Found: Voice not found
+            - 500 Internal Server Error: ElevenLabs API error
+    """
+    try:
+        await delete_voice(voice_id)
+        return None  # 204 No Content
+        
+    except ValueError as e:
+        # Handle voice not found or validation errors
+        error_message = str(e)
+        if "not found" in error_message.lower():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Voice with ID {voice_id} not found"
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid voice ID: {error_message}"
+            )
+    except Exception as e:
+        # Handle any other errors from ElevenLabs API
+        error_message = str(e)
+        
+        if "unauthorized" in error_message.lower() or "401" in error_message:
+            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+            detail = "Invalid ElevenLabs API key configuration"
+        elif "forbidden" in error_message.lower() or "403" in error_message:
+            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+            detail = "ElevenLabs API access forbidden - check API key permissions"
+        elif "rate limit" in error_message.lower() or "429" in error_message:
+            status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+            detail = "ElevenLabs API rate limit exceeded"
+        else:
+            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+            detail = f"Failed to delete voice: {error_message}"
         
         raise HTTPException(
             status_code=status_code,

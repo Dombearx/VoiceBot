@@ -116,7 +116,7 @@ def create_voice(command: CreateVoiceCommand) -> VoiceDTO:
         id=created_voice["voice_id"],
         name=created_voice["name"],
         prompt=command.voice_description,
-        created_at=datetime.fromtimestamp(created_voice.get("created_at_unix", 0)) if created_voice.get("created_at_unix") else datetime.utcnow(),
+        created_at=datetime.fromtimestamp(created_voice["created_at_unix"]) if created_voice.get("created_at_unix") and created_voice.get("created_at_unix") > 0 else datetime.utcnow(),
         samples=[]  # No samples needed for create response
     )
 
@@ -283,3 +283,33 @@ def validate_voice_exists(voice_id: str) -> bool:
     except Exception as e:
         logger.error(f"Failed to validate voice existence: {str(e)}")
         raise
+
+
+async def delete_voice(voice_id: str) -> None:
+    """
+    Delete a voice by ID using ElevenLabs API.
+    
+    Args:
+        voice_id: ID of the voice to delete
+        
+    Raises:
+        ValueError: If voice not found or invalid ID
+        Exception: If ElevenLabs API call fails
+    """
+    try:
+        client = create_elevenlabs_client()
+        
+        # Delete the voice directly - let ElevenLabs API handle validation
+        client.delete_voice(voice_id)
+        
+        logger.info(f"Successfully deleted voice with ID: {voice_id}")
+        
+    except Exception as e:
+        error_message = str(e)
+        logger.error(f"Failed to delete voice {voice_id}: {error_message}")
+        
+        # Check if it's a "not found" error from ElevenLabs
+        if "not found" in error_message.lower():
+            raise ValueError(f"Voice with ID {voice_id} not found")
+        else:
+            raise Exception(f"Failed to delete voice: {error_message}") from e

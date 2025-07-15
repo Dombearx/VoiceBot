@@ -33,6 +33,7 @@ class ElevenLabsAPIClient:
         
         Returns:
             List of VoiceDetailDTO objects containing voice information with samples.
+            Filters out voices that contain "mAIrusz" in their name.
             
         Raises:
             Exception: If the API request fails.
@@ -47,6 +48,11 @@ class ElevenLabsAPIClient:
             
             voices = []
             for voice_data in response.voices:
+                # Filter out voices that contain "mAIrusz" in their name
+                voice_name = getattr(voice_data, 'name', '')
+                if 'mairusz' in voice_name.lower():
+                    continue
+                    
                 voice_detail = self._map_voice_to_dto(voice_data)
                 voices.append(voice_detail)
             
@@ -81,11 +87,11 @@ class ElevenLabsAPIClient:
                 raise ValueError("Missing required field: name")
             
             # Convert Unix timestamp to datetime
-            if created_at_unix:
+            if created_at_unix and created_at_unix > 0:
                 created_at = datetime.fromtimestamp(created_at_unix)
             else:
-                # Fallback to current time if not provided
-                created_at = datetime.now()
+                # Fallback to current UTC time if not provided or invalid
+                created_at = datetime.utcnow()
             
             # Map samples
             samples = []
@@ -282,3 +288,30 @@ class ElevenLabsAPIClient:
                 raise Exception("Invalid text or voice parameters") from e
             else:
                 raise Exception(f"Failed to generate speech: {str(e)}") from e
+
+    def delete_voice(self, voice_id: str) -> None:
+        """
+        Delete a voice using ElevenLabs API.
+        
+        Args:
+            voice_id: ID of the voice to delete
+            
+        Raises:
+            Exception: If the API request fails
+        """
+        try:
+            self.client.voices.delete(voice_id)
+            
+        except Exception as e:
+            # Map ElevenLabs API errors to more specific exceptions
+            error_message = str(e).lower()
+            if "unauthorized" in error_message or "401" in error_message:
+                raise Exception("Invalid ElevenLabs API key") from e
+            elif "forbidden" in error_message or "403" in error_message:
+                raise Exception("ElevenLabs API access forbidden - check API key permissions") from e
+            elif "rate limit" in error_message or "429" in error_message:
+                raise Exception("ElevenLabs API rate limit exceeded - please try again later") from e
+            elif "not found" in error_message or "404" in error_message:
+                raise Exception(f"Voice with ID {voice_id} not found") from e
+            else:
+                raise Exception(f"Failed to delete voice: {str(e)}") from e

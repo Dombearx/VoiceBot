@@ -268,4 +268,61 @@ export async function createVoice(command: CreateVoiceCommand): Promise<CreateVo
       error instanceof Error ? error : undefined
     );
   }
+}
+
+/**
+ * Delete a voice by ID
+ * 
+ * @param voiceId - ID of the voice to delete
+ * @returns Promise<void> - Resolves when voice is deleted
+ * @throws VoiceServiceError - If the API request fails
+ */
+export async function deleteVoice(voiceId: string): Promise<void> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/voices/${voiceId}`, {
+      method: 'DELETE',
+      headers: defaultHeaders,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.detail || errorMessage;
+      } catch {
+        errorMessage = errorText || errorMessage;
+      }
+
+      throw new VoiceServiceError(
+        `Failed to delete voice: ${errorMessage}`,
+        response.status
+      );
+    }
+
+    // 204 No Content - successful deletion
+    return;
+
+  } catch (error) {
+    if (error instanceof VoiceServiceError) {
+      throw error;
+    }
+
+    // Handle network errors
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new VoiceServiceError(
+        'Network error: Unable to connect to the API server',
+        0,
+        error
+      );
+    }
+
+    // Handle other errors
+    throw new VoiceServiceError(
+      `Unexpected error while deleting voice: ${error instanceof Error ? error.message : String(error)}`,
+      0,
+      error instanceof Error ? error : undefined
+    );
+  }
 } 

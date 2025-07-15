@@ -81,6 +81,15 @@ class PromptImprovementResponseDTO(CamelModel):
     improved_prompt: str
 
 
+# Sample Text Generation
+class GenerateSampleTextCommand(CamelModel):
+    voice_description: str = Field(..., min_length=20, max_length=1000, description="Voice description to generate sample text for (20-1000 characters)")
+
+
+class GenerateSampleTextResponseDTO(CamelModel):
+    sample_text: str
+
+
 # Text-to-Speech
 class TextToSpeechCommand(CamelModel):
     voice_id: str
