@@ -4,7 +4,7 @@
 
 import type { 
   ListVoicesResponseDTO, 
-  VoiceDTO, 
+  VoiceDetailDTO,
   DesignVoiceCommand, 
   DesignVoiceResponseDTO, 
   CreateVoiceCommand, 
@@ -111,10 +111,10 @@ export async function fetchVoices(): Promise<ListVoicesResponseDTO> {
  * In the future, this could be replaced with a dedicated API endpoint
  * 
  * @param voiceId - ID of the voice to retrieve
- * @returns Promise<VoiceDTO | null> - Voice data or null if not found
+ * @returns Promise<VoiceDetailDTO | null> - Voice data or null if not found
  * @throws VoiceServiceError - If the API request fails
  */
-export async function getVoiceById(voiceId: string): Promise<VoiceDTO | null> {
+export async function getVoiceById(voiceId: string): Promise<VoiceDetailDTO | null> {
   const response = await fetchVoices();
   const voice = response.items.find(v => v.id === voiceId);
   return voice || null;

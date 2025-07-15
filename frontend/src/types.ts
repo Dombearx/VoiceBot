@@ -19,8 +19,17 @@ export interface VoiceDTO {
   samples: VoiceSampleDTO[];
 }
 
+// Backend uses VoiceDetailDTO for list responses
+export interface VoiceDetailDTO {
+  id: string;
+  name: string;
+  prompt: string;
+  createdAt: string; // ISO8601 UTC
+  samples: VoiceSampleDTO[];
+}
+
 export interface ListVoicesResponseDTO {
-  items: VoiceDTO[];
+  items: VoiceDetailDTO[];
 }
 
 export interface DesignVoiceCommand {
@@ -57,6 +66,15 @@ export interface PromptImprovementCommand {
 
 export interface PromptImprovementResponseDTO {
   improvedPrompt: string;
+}
+
+// Sample Text Generation (missing in original frontend types)
+export interface GenerateSampleTextCommand {
+  voiceDescription: string;
+}
+
+export interface GenerateSampleTextResponseDTO {
+  sampleText: string;
 }
 
 // Text-to-Speech

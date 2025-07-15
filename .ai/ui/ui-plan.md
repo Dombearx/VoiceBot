@@ -33,7 +33,7 @@ Interfejs użytkownika będzie składał się z głównego układu z bocznym pan
   - Dropdown z listą kanałów
   - Pole zmiany nazwy bota
   - Upload avatara (jpg, png)
-  - Lista dostępnych głosów z możliwością lokalnego podglądu (play/pause)
+  - Lista dostępnych głosów z możliwością odsłuchania podanego fragmentu tekstu.
 - Kluczowe komponenty:
   - Panel statusu (Shadcn/ui Card)
   - Dropdown kanałów (Radix Dropdown)

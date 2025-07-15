@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import type { 
-  VoiceDTO, 
+  VoiceDetailDTO,
   ListVoicesResponseDTO, 
   DesignVoiceCommand, 
   DesignVoiceResponseDTO, 
@@ -19,7 +19,7 @@ import {
 import { improvePrompt as improvePromptApi } from '../prompt';
 
 interface UseVoicesResult {
-  voices: VoiceDTO[];
+  voices: VoiceDetailDTO[];
   isLoading: boolean;
   error: string | null;
   fetchVoices: () => Promise<void>;
@@ -28,7 +28,7 @@ interface UseVoicesResult {
 }
 
 export function useFetchVoices(): UseVoicesResult {
-  const [voices, setVoices] = useState<VoiceDTO[]>([]);
+  const [voices, setVoices] = useState<VoiceDetailDTO[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

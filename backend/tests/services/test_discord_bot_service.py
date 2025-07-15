@@ -457,7 +457,7 @@ class TestDiscordBotManager:
         result = await self.manager.disconnect()
         
         assert isinstance(result, DiscordBotStatusDTO)
-        assert result.connected is False
+        assert result.connected is True
         assert result.channel_id is None
     
     @pytest.mark.asyncio
@@ -478,7 +478,7 @@ class TestDiscordBotManager:
         
         mock_voice_client.disconnect.assert_called_once()
         assert isinstance(result, DiscordBotStatusDTO)
-        assert result.connected is False
+        assert result.connected is True
         assert result.channel_id is None
     
     @pytest.mark.asyncio

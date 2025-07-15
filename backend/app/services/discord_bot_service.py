@@ -252,7 +252,8 @@ class DiscordBotManager:
             if not disconnected_any:
                 logger.info("Bot was not connected to any voice channel")
             
-            return DiscordBotStatusDTO(connected=False, channel_id=None)
+            # Bot is still connected to Discord, just not to voice channel
+            return DiscordBotStatusDTO(connected=True, channel_id=None)
             
         except Exception as e:
             logger.error(f"Error disconnecting from voice channel: {str(e)}")
