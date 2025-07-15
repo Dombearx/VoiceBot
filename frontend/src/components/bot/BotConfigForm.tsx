@@ -64,7 +64,7 @@ export default function BotConfigForm({
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setValue('avatar', file, { shouldValidate: true });
+      setValue('avatar', file, { shouldValidate: true, shouldDirty: true });
       
       // Create preview URL
       const url = URL.createObjectURL(file);
@@ -94,7 +94,7 @@ export default function BotConfigForm({
   };
 
   const removeAvatar = () => {
-    setValue('avatar', undefined, { shouldValidate: true });
+    setValue('avatar', undefined, { shouldValidate: true, shouldDirty: true });
     setPreviewUrl(initialAvatarUrl || null);
   };
 
@@ -193,6 +193,7 @@ export default function BotConfigForm({
           <div className="flex items-center gap-2">
             <Button
               type="submit"
+              variant="outline"
               disabled={isUpdating || !isDirty}
               className="flex items-center gap-2"
             >
