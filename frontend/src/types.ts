@@ -77,6 +77,15 @@ export interface GenerateSampleTextResponseDTO {
   sampleText: string;
 }
 
+// Translation
+export interface TranslateVoiceDescriptionCommand {
+  voiceDescription: string;
+}
+
+export interface TranslateVoiceDescriptionResponseDTO {
+  translatedDescription: string;
+}
+
 // Text-to-Speech
 export interface TextToSpeechCommand {
   voiceId: string;

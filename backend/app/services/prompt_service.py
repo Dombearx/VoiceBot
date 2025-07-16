@@ -1,6 +1,6 @@
 from openai import OpenAI
-from app.models import PromptImprovementCommand, GenerateSampleTextCommand
-from app.config.prompt_instructions import IMPROVE_PROMPT_INSTRUCTION, GENERATE_SAMPLE_TEXT_INSTRUCTION
+from app.models import PromptImprovementCommand, GenerateSampleTextCommand, TranslateVoiceDescriptionCommand
+from app.config.prompt_instructions import IMPROVE_PROMPT_INSTRUCTION, GENERATE_SAMPLE_TEXT_INSTRUCTION, TRANSLATE_VOICE_DESCRIPTION_INSTRUCTION
 from app.services.error_logging import log_error
 from app.models import ApiType
 
@@ -22,10 +22,10 @@ async def improve_prompt(cmd: PromptImprovementCommand) -> str:
         client = OpenAI()
         
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4.1-mini",
             messages=[
                 {"role": "system", "content": IMPROVE_PROMPT_INSTRUCTION},
-                {"role": "user", "content": cmd.prompt}
+                {"role": "user", "content": f"Podstawowy opis do ulepszenia: {cmd.prompt}"}
             ],
             max_tokens=1000,
             temperature=0.7
@@ -56,13 +56,47 @@ async def generate_sample_text(cmd: GenerateSampleTextCommand) -> str:
         client = OpenAI()
         
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4.1-mini",
             messages=[
                 {"role": "system", "content": GENERATE_SAMPLE_TEXT_INSTRUCTION},
-                {"role": "user", "content": f"Generate sample text for a voice described as: {cmd.voice_description}"}
+                {"role": "user", "content": f"Opis głosu: {cmd.voice_description}"}
             ],
             max_tokens=500,
             temperature=0.8
+        )
+        
+        return response.choices[0].message.content.strip()
+        
+    except Exception as e:
+        error_message = f"OpenAI API call failed: {str(e)}"
+        log_error(ApiType.prompt_improvement, error_message)  # Using same ApiType for now
+        raise Exception("External API failure") from e
+
+
+async def translate_voice_description(cmd: TranslateVoiceDescriptionCommand) -> str:
+    """
+    Translate voice description from Polish to English using OpenAI API.
+    
+    Args:
+        cmd: Command containing the voice description to translate
+        
+    Returns:
+        Translated voice description in English
+        
+    Raises:
+        Exception: If OpenAI API call fails
+    """
+    try:
+        client = OpenAI()
+        
+        response = client.chat.completions.create(
+            model="gpt-4.1-mini",
+            messages=[
+                {"role": "system", "content": TRANSLATE_VOICE_DESCRIPTION_INSTRUCTION},
+                {"role": "user", "content": cmd.voice_description}
+            ],
+            max_tokens=500,
+            temperature=0.3
         )
         
         return response.choices[0].message.content.strip()

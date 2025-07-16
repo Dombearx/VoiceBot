@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/tooltip';
 import { Sparkles, Loader2, HelpCircle } from 'lucide-react';
 import PromptImprovementButton from './PromptImprovementButton';
+import TranslateButton from './TranslateButton';
 import GenerateSampleTextButton from './GenerateSampleTextButton';
 
 interface CreateVoiceFormProps {
@@ -159,6 +160,11 @@ export default function CreateVoiceForm({ onDesign, isDesigning, error, disabled
                 <PromptImprovementButton
                   prompt={formValues.prompt}
                   onImprove={handlePromptImprove}
+                  disabled={isDesigning || disabled}
+                />
+                <TranslateButton
+                  prompt={formValues.prompt}
+                  onTranslate={handlePromptImprove}
                   disabled={isDesigning || disabled}
                 />
                 <TooltipProvider>

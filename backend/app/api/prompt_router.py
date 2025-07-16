@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from app.models import PromptImprovementCommand, PromptImprovementResponseDTO, GenerateSampleTextCommand, GenerateSampleTextResponseDTO
+from app.models import PromptImprovementCommand, PromptImprovementResponseDTO, GenerateSampleTextCommand, GenerateSampleTextResponseDTO, TranslateVoiceDescriptionCommand, TranslateVoiceDescriptionResponseDTO
 from app.services import prompt_service
 
 router = APIRouter(prefix="/prompts", tags=["prompts"])
@@ -58,4 +58,32 @@ async def generate_sample_text(cmd: GenerateSampleTextCommand) -> GenerateSample
         if "External API failure" in str(e):
             raise HTTPException(status_code=503, detail="External AI service unavailable")
         else:
-            raise HTTPException(status_code=500, detail="Internal server error") 
+            raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.post("/translate-voice-description", response_model=TranslateVoiceDescriptionResponseDTO)
+async def translate_voice_description(cmd: TranslateVoiceDescriptionCommand) -> TranslateVoiceDescriptionResponseDTO:
+    """
+    Translate voice description from Polish to English.
+    
+    Args:
+        cmd: Command containing the voice description to translate
+        
+    Returns:
+        Response containing the translated voice description
+        
+    Raises:
+        HTTPException: 400 for validation errors, 503 for external API failures, 500 for internal errors
+    """
+    try:
+        translated_description = await prompt_service.translate_voice_description(cmd)
+        return TranslateVoiceDescriptionResponseDTO(translated_description=translated_description)
+    
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+    except Exception as e:
+        if "External API failure" in str(e):
+            raise HTTPException(status_code=503, detail="External AI service unavailable")
+        else:
+            raise HTTPException(status_code=500, detail="Internal server error")

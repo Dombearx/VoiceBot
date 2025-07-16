@@ -90,6 +90,15 @@ class GenerateSampleTextResponseDTO(CamelModel):
     sample_text: str
 
 
+# Translation
+class TranslateVoiceDescriptionCommand(CamelModel):
+    voice_description: str = Field(..., min_length=1, max_length=1000, description="Voice description to translate to English (1-1000 characters)")
+
+
+class TranslateVoiceDescriptionResponseDTO(CamelModel):
+    translated_description: str
+
+
 # Text-to-Speech
 class TextToSpeechCommand(CamelModel):
     voice_id: str
