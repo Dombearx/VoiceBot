@@ -10,6 +10,9 @@ from app.models import VoiceDetailDTO, VoiceSampleDTO
 
 # ElevenLabs API configuration
 DEFAULT_TTS_MODEL = "eleven_multilingual_v2"
+NEW_TTS_MODEL = "eleven_v3"
+# Voice design models (different from TTS models)
+VOICE_DESIGN_MODEL = "eleven_multilingual_ttv_v2"
 
 
 class ElevenLabsAPIClient:
@@ -166,7 +169,7 @@ class ElevenLabsAPIClient:
             # Prepare request data
             request_data = {
                 "voice_description": voice_description,
-                # "model_id": "eleven_ttv_v3",
+                "model_id": VOICE_DESIGN_MODEL,
                 "loudness": loudness,
                 "guidance_scale": creativity,
                 "auto_generate_text": sample_text is None

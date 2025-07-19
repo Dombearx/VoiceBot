@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     build:
@@ -10,12 +8,12 @@ services:
       - "8020:8020"
     environment:
       - PYTHONUNBUFFERED=1
-    volumes:
-      # Mount for development - comment out in production
-      - ./backend:/app
-      # Exclude node_modules and other build artifacts
-      - /app/__pycache__
-      - /app/.pytest_cache
+    # volumes:
+    #   # Mount for development - comment out in production
+    #   - ./backend:/app
+    #   # Exclude node_modules and other build artifacts
+    #   - /app/__pycache__
+    #   - /app/.pytest_cache
     networks:
       - voicebot-network
     restart: unless-stopped
@@ -32,7 +30,7 @@ services:
       dockerfile: Dockerfile
     container_name: voicebot-frontend
     ports:
-      - "5173:5173"
+      - "5173:80"
     depends_on:
       backend:
         condition: service_healthy
@@ -40,7 +38,7 @@ services:
       - voicebot-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -48,8 +46,4 @@ services:
 
 networks:
   voicebot-network:
-    driver: bridge
-
-volumes:
-  # Add any persistent volumes here if needed
-  # voicebot-data: 
+    driver: bridge 

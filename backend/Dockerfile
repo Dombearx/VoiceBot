@@ -8,6 +8,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     gcc \
     curl \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
@@ -20,10 +21,12 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry config virtualenvs.create false
 
 # Install dependencies
-RUN poetry install --only=main --no-dev
+RUN poetry install --only=main --no-root
 
 # Copy application code
 COPY . .
+# Copy environment file
+COPY .env .
 
 # Expose port
 EXPOSE 8020
